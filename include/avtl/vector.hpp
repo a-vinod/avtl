@@ -107,6 +107,8 @@ class vector
             throw std::length_error(
                 "Capacity reservation request is less than vector size");
         }
+
+        resize(new_capacity);
     }
 
     /**
