@@ -2,6 +2,7 @@
 #define AVTL_VECTOR
 
 #include <cstddef>
+#include <memory>
 #include <stdexcept>
 
 namespace avtl
@@ -13,9 +14,11 @@ template <typename T>
 class vector
 {
    public:
-    vector()
-        : _data(new T[INITIAL_CAPACITY]), _size(0), _capacity(INITIAL_CAPACITY)
+    vector() : _data(nullptr), _size(0), _capacity(INITIAL_CAPACITY)
     {
+        std::allocator<T> alloc;
+        _data = std::allocator_traits<std::allocator<T>>::allocate(
+            alloc, INITIAL_CAPACITY);
     }
 
     // TODO other constructors
@@ -24,7 +27,14 @@ class vector
     {
         if (_data)
         {
-            delete[] _data;
+            std::allocator<T> alloc;
+            for (size_t i = 0; i < _size; ++i)
+            {
+                std::allocator_traits<std::allocator<T>>::destroy(alloc,
+                                                                  _data + i);
+            }
+            std::allocator_traits<std::allocator<T>>::deallocate(alloc, _data,
+                                                                 _capacity);
         }
     }
 
@@ -71,9 +81,16 @@ class vector
      */
     void clear()
     {
-        delete[] _data;
+        std::allocator<T> alloc;
+        for (size_t i = 0; i < _size; ++i)
+        {
+            std::allocator_traits<std::allocator<T>>::destroy(alloc, _data + i);
+        }
+        std::allocator_traits<std::allocator<T>>::deallocate(alloc, _data,
+                                                             _capacity);
 
-        _data = new T[INITIAL_CAPACITY];
+        _data = std::allocator_traits<std::allocator<T>>::allocate(
+            alloc, INITIAL_CAPACITY);
         _size = 0;
         _capacity = INITIAL_CAPACITY;
     }
@@ -84,17 +101,22 @@ class vector
      */
     void resize(size_t new_capacity)
     {
-        // Allocate a new data array
-        T *new_data = new T[new_capacity];
+        std::allocator<T> alloc;
+        // Allocate a new data array without invoking the default constructor
+        T *new_data = std::allocator_traits<std::allocator<T>>::allocate(
+            alloc, new_capacity);
 
         // Copy the data from the original data array to the new one
         for (size_t i = 0; i < _size; ++i)
         {
-            new_data[i] = _data[i];
+            std::allocator_traits<std::allocator<T>>::construct(
+                alloc, new_data + i, std::move(_data[i]));
+            std::allocator_traits<std::allocator<T>>::destroy(alloc, _data + i);
         }
 
         // Point the internal data to the new one and free old resources
-        delete[] _data;
+        std::allocator_traits<std::allocator<T>>::deallocate(alloc, _data,
+                                                             _capacity);
         _data = new_data;
         _capacity = new_capacity;
     };
@@ -121,7 +143,11 @@ class vector
         {
             resize(_capacity * GROW_FACTOR);
         }
-        _data[_size++] = e;
+
+        std::allocator<T> alloc;
+        std::allocator_traits<std::allocator<T>>::construct(alloc,
+                                                            _data + _size, e);
+        ++_size;
     }
 
     /**
@@ -130,7 +156,9 @@ class vector
      */
     void pop()
     {
-        _size--;
+        --_size;
+        std::allocator<T> alloc;
+        std::allocator_traits<std::allocator<T>>::destroy(alloc, _data + _size);
 
         size_t resize_threshold = CONTRACT_FACTOR * _capacity;
         if (_size <= resize_threshold)
