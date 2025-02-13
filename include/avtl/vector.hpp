@@ -21,7 +21,31 @@ class vector
             alloc, INITIAL_CAPACITY);
     }
 
-    // TODO other constructors
+    vector(const vector<T> &other)
+        : _data(nullptr), _size(other._size), _capacity(other._capacity)
+    {
+        std::allocator<T> alloc;
+        _data = std::allocator_traits<std::allocator<T>>::allocate(alloc,
+                                                                   _capacity);
+        for (size_t i = 0; i < _size; ++i)
+        {
+            std::allocator_traits<std::allocator<T>>::construct(
+                alloc, _data + i, other._data[i]);
+        }
+    }
+
+    vector<T> &operator=(const vector<T> &other)
+    {
+        if (this != other)
+        {
+            vector<T> temp(other);
+            std::swap(temp._data, _data);
+            std::swap(temp._size, _size);
+            std::swap(temp._capacity, _capacity);
+        }  // temp goes out of scope and is destroyed while this is initialized
+
+        return *this;
+    }
 
     ~vector()
     {
