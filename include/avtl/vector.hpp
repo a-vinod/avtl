@@ -125,7 +125,8 @@ class vector
     }
 
     /**
-     * Pop the element at the last position of the vector
+     * Pop the element at the last position of the vector. Undefined behavior
+     * if the vector is empty!
      */
     void pop()
     {
