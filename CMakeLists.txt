@@ -7,6 +7,7 @@ set(CMAKE_CXX_STNADARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+add_subdirectory(third_party/googletest)
 enable_testing()
 
 add_library(avtl INTERFACE)

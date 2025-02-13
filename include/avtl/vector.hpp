@@ -44,9 +44,7 @@ class vector
     {
         if (idx >= _size)
         {
-            throw std::out_of_range(
-                "Index %ld is out of bounds for vector of size %ld", idx,
-                _size);
+            throw std::out_of_range("Index is out of bounds");
         }
 
         return _data[idx];
@@ -107,9 +105,7 @@ class vector
         if (new_capacity < _size)
         {
             throw std::length_error(
-                "Capacity reservation request of size (%ld) is less than "
-                "vector size (%ld)",
-                new_capacity, _size);
+                "Capacity reservation request is less than vector size");
         }
     }
 
