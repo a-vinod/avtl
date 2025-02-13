@@ -67,6 +67,7 @@ class vector
      * the cost of safety.
      * @param idx index
      */
+    const T &operator[](size_t idx) const { return _data[idx]; }
     T &operator[](size_t idx) { return _data[idx]; }
 
     /**
@@ -74,6 +75,15 @@ class vector
      * slower than a raw access.
      * @param idx index
      */
+    const T &at(size_t idx) const
+    {
+        if (idx >= _size)
+        {
+            throw std::out_of_range("Index is out of bounds");
+        }
+
+        return _data[idx];
+    }
     T &at(size_t idx)
     {
         if (idx >= _size)
